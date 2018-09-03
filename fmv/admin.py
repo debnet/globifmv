@@ -27,7 +27,7 @@ class PlayerAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'user', 'ip', 'scenario', ),
+            fields=('name', 'description', 'image', 'user', 'ip', 'scenario', ),
             classes=('wide', ),
         )),
         (_("Ressources"), dict(
@@ -53,7 +53,7 @@ class ScenarioAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'intro', ),
+            fields=('name', 'description', 'image', 'intro', ),
             classes=('wide', ),
         )),
         (_("Ressources"), dict(
@@ -98,7 +98,7 @@ class SceneAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'scenario', 'url', ),
+            fields=('name', 'description', 'image', 'scenario', 'url', ),
             classes=('wide',),
         )),
     )
@@ -129,7 +129,7 @@ class ChoiceAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'scene_from', 'scene_to', ),
+            fields=('name', 'description', 'image', 'scene_from', 'scene_to', ),
             classes=('wide', ),
         )),
     )
@@ -151,7 +151,7 @@ class ItemAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', ),
+            fields=('name', 'description', 'image', ),
             classes=('wide', ),
         )),
     )

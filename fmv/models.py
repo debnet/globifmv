@@ -24,7 +24,7 @@ class NamedModelMixin(models.Model):
     description = models.TextField(
         blank=True, verbose_name=_("description"))
     image = models.ImageField(
-        blank=True, null=True, upload_to='items', verbose_name=_("image"))
+        blank=True, null=True, verbose_name=_("image"))
 
     def __str__(self):
         return self.name or str(self.id or __("(non enregistré)"))
@@ -58,7 +58,6 @@ class Player(Entity, NamedModelMixin):
     class Meta:
         verbose_name = _("joueur")
         verbose_name_plural = _("joueurs")
-        unique_together = ('ip', 'scenario')
 
 
 class Scenario(Entity, NamedModelMixin):
