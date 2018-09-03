@@ -143,6 +143,8 @@ class Choice(Entity, NamedModelMixin):
     scene_to = models.ForeignKey(
         'Scene', blank=True, null=True, on_delete=models.CASCADE,
         related_name='origins', verbose_name=_("destination"))
+    order = models.PositiveSmallIntegerField(
+        default=1, verbose_name=_("ordre"))
     count = models.PositiveSmallIntegerField(
         default=0, verbose_name=_("compteur"))
 

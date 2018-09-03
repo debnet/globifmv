@@ -140,14 +140,14 @@ class ChoiceAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'scene_from', 'scene_to', 'count', ),
+            fields=('name', 'description', 'image', 'scene_from', 'scene_to', 'order', 'count', ),
             classes=('wide', ),
         )),
     )
     inlines = [ConditionInlineAdmin]
     filter_horizontal = ()
     list_display_links = ('name', )
-    list_display = ('name', 'scene_from', 'scene_to', )
+    list_display = ('name', 'scene_from', 'scene_to', 'order', 'count', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('scene_from', 'scene_to', )
