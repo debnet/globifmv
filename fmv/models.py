@@ -91,6 +91,8 @@ class Scene(Entity, NamedModelMixin):
         'Scene', blank=True, null=True, on_delete=models.CASCADE,
         related_name='next', verbose_name=_("scène précédente"))
     url = models.URLField(blank=True, verbose_name=_("URL"))
+    timecode = models.FloatField(
+        blank=True, null=True, verbose_name=_("timecode"))
     fight = models.ForeignKey(
         'Fight', blank=True, null=True, on_delete=models.SET_NULL,
         related_name='scenes', verbose_name=_("combat"))

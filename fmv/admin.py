@@ -104,7 +104,7 @@ class SceneAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'scenario', 'scene', 'url', ),
+            fields=('name', 'description', 'image', 'scenario', 'scene', 'url', 'timecode', ),
             classes=('wide', ),
         )),
         (_("Autres"), dict(
