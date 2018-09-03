@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from fmv.models import User, Player, Scenario, Scene, Condition, Action, Choice, Item
+from fmv.models import User, Player, Scenario, Scene, Condition, Action, Choice, Item, Fight
 
 
 @admin.register(User)
@@ -39,11 +39,15 @@ class PlayerAdmin(EntityAdmin):
     filter_horizontal = ('items', 'scenes', )
     list_display_links = ('name', )
     list_display = ('name', 'user', 'ip', 'scenario', 'health', 'money', )
+    list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('user', 'scenario', )
     save_on_top = True
     actions_on_bottom = True
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('scenario')
 
 
 @admin.register(Scenario)
@@ -70,6 +74,9 @@ class ScenarioAdmin(EntityAdmin):
     autocomplete_fields = ('intro', )
     save_on_top = True
     actions_on_bottom = True
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('intro')
 
 
 class ChoiceInlineAdmin(EntityStackedInline):
@@ -98,19 +105,23 @@ class SceneAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'scenario', 'url', ),
+            fields=('name', 'description', 'image', 'scenario', 'url', 'fight', ),
             classes=('wide',),
         )),
     )
     inlines = [ChoiceInlineAdmin, ActionInlineAdmin]
     filter_horizontal = ()
     list_display_links = ('name',)
-    list_display = ('name', 'scenario', 'url', )
+    list_display = ('name', 'scenario', 'url', 'fight', )
+    list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('scenario', )
     save_on_top = True
     actions_on_bottom = True
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('scenario', 'fight')
 
 
 class ConditionInlineAdmin(EntityStackedInline):
@@ -129,7 +140,7 @@ class ChoiceAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'scene_from', 'scene_to', ),
+            fields=('name', 'description', 'image', 'scene_from', 'scene_to', 'count', ),
             classes=('wide', ),
         )),
     )
@@ -143,6 +154,9 @@ class ChoiceAdmin(EntityAdmin):
     save_on_top = True
     actions_on_bottom = True
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('scene_from', 'scene_to')
+
 
 @admin.register(Item)
 class ItemAdmin(EntityAdmin):
@@ -151,13 +165,43 @@ class ItemAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', ),
+            fields=('name', 'description', 'image', 'attack', 'defense', ),
             classes=('wide', ),
         )),
     )
     filter_horizontal = ()
     list_display_links = ('name', )
     list_display = ('name', )
+    search_fields = ('name', 'description', )
+    ordering = ('name', )
+    autocomplete_fields = ()
+    save_on_top = True
+    actions_on_bottom = True
+
+
+@admin.register(Fight)
+class FightAdmin(EntityAdmin):
+    """
+    Administration des combats
+    """
+    fieldsets = (
+        (_("Informations"), dict(
+            fields=('name', 'description', 'image', ),
+            classes=('wide', ),
+        )),
+        (_("Ennemi"), dict(
+            fields=('health', 'attack', 'defense', ),
+            classes=('wide', ),
+        )),
+        (_("Scènes"), dict(
+            fields=('url_pc_hit', 'url_npc_hit', 'url_pc_miss', 'url_npc_miss', 'url_pc_dead', 'url_npc_dead', ),
+            classes=('wide', ),
+        )),
+    )
+    inlines = []
+    filter_horizontal = ()
+    list_display_links = ('name', )
+    list_display = ('name', 'health', 'attack', 'defense', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ()

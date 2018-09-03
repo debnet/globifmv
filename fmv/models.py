@@ -88,6 +88,9 @@ class Scene(Entity, NamedModelMixin):
         'Scenario', on_delete=models.CASCADE,
         related_name='scenes', verbose_name=_("scénario"))
     url = models.URLField(blank=True, verbose_name=_("URL"))
+    fight = models.ForeignKey(
+        'Fight', blank=True, null=True, on_delete=models.SET_NULL,
+        related_name='scenes', verbose_name=_("combat"))
 
     @property
     def youtube_url(self):
@@ -140,6 +143,8 @@ class Choice(Entity, NamedModelMixin):
     scene_to = models.ForeignKey(
         'Scene', blank=True, null=True, on_delete=models.CASCADE,
         related_name='origins', verbose_name=_("destination"))
+    count = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("compteur"))
 
     class Meta:
         verbose_name = _("choix")
@@ -181,10 +186,42 @@ class Item(Entity, NamedModelMixin):
     """
     Objet
     """
+    attack = models.PositiveSmallIntegerField(
+        blank=True, null=True, verbose_name=_("attaque"))
+    defense = models.PositiveSmallIntegerField(
+        blank=True, null=True, verbose_name=_("défense"))
 
     class Meta:
         verbose_name = _("objet")
         verbose_name_plural = _("objets")
+
+
+class Fight(Entity, NamedModelMixin):
+    """
+    Combat
+    """
+    health = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("santé"))
+    attack = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("attaque"))
+    defense = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("défense"))
+    url_pc_hit = models.URLField(
+        blank=True, verbose_name=_("URL coup PJ"))
+    url_npc_hit = models.URLField(
+        blank=True, verbose_name=_("URL coup PNJ"))
+    url_pc_miss = models.URLField(
+        blank=True, verbose_name=_("URL raté PJ"))
+    url_npc_miss = models.URLField(
+        blank=True, verbose_name=_("URL raté PNJ"))
+    url_pc_dead = models.URLField(
+        blank=True, verbose_name=_("URL mort PJ"))
+    url_npc_dead = models.URLField(
+        blank=True, verbose_name=_("URL mort PNJ"))
+
+    class Meta:
+        verbose_name = _("combat")
+        verbose_name_plural = _("combats")
 
 
 MODELS = (
@@ -196,4 +233,5 @@ MODELS = (
     Choice,
     Condition,
     Item,
+    Fight,
 )
