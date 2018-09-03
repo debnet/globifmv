@@ -87,18 +87,17 @@ class Scene(Entity, NamedModelMixin):
     scenario = models.OneToOneField(
         'Scenario', on_delete=models.CASCADE,
         related_name='scenes', verbose_name=_("scénario"))
+    scene = models.ForeignKey(
+        'Scene', blank=True, null=True, on_delete=models.CASCADE,
+        related_name='next', verbose_name=_("scène précédente"))
     url = models.URLField(blank=True, verbose_name=_("URL"))
     fight = models.ForeignKey(
         'Fight', blank=True, null=True, on_delete=models.SET_NULL,
         related_name='scenes', verbose_name=_("combat"))
-
-    @property
-    def youtube_url(self):
-        url = self.url.replace('watch?v=', 'embed/')
-        options = 'enablejsapi=1&autoplay=1&controls=0&loop=0&showinfo=0&rel=0'
-        if '?' in url:
-            return f"{url}&{options}"
-        return f"{url}?{options}"
+    order = models.PositiveSmallIntegerField(
+        default=1, verbose_name=_("ordre"))
+    count = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("compteur"))
 
     class Meta:
         verbose_name = _("scène")
@@ -133,26 +132,6 @@ class Action(Entity):
         verbose_name_plural = _("actions")
 
 
-class Choice(Entity, NamedModelMixin):
-    """
-    Choix
-    """
-    scene_from = models.ForeignKey(
-        'Scene', blank=True, null=True, on_delete=models.CASCADE,
-        related_name='choices', verbose_name=_("scène"))
-    scene_to = models.ForeignKey(
-        'Scene', blank=True, null=True, on_delete=models.CASCADE,
-        related_name='origins', verbose_name=_("destination"))
-    order = models.PositiveSmallIntegerField(
-        default=1, verbose_name=_("ordre"))
-    count = models.PositiveSmallIntegerField(
-        default=0, verbose_name=_("compteur"))
-
-    class Meta:
-        verbose_name = _("choix")
-        verbose_name_plural = _("choix")
-
-
 class Condition(Entity):
     """
     Condition
@@ -162,9 +141,9 @@ class Condition(Entity):
         ('|', _("ou")),
     )
 
-    choice = models.ForeignKey(
-        'Choice', on_delete=models.CASCADE,
-        related_name='conditions', verbose_name=_("choix"))
+    scene = models.ForeignKey(
+        'Scene', on_delete=models.CASCADE,
+        related_name='conditions', verbose_name=_("scène"))
     type = models.CharField(
         max_length=1, default='&',
         choices=TYPE, verbose_name=_("type"))
@@ -175,9 +154,6 @@ class Condition(Entity):
     item = models.ForeignKey(
         'Item', blank=True, null=True, on_delete=models.SET_NULL,
         related_name='+', verbose_name=_("objets"))
-    scene = models.ForeignKey(
-        'Scene', blank=True, null=True, on_delete=models.SET_NULL,
-        related_name='+', verbose_name=_("scenes"))
 
     class Meta:
         verbose_name = _("condition")
@@ -232,7 +208,6 @@ MODELS = (
     Scenario,
     Action,
     Scene,
-    Choice,
     Condition,
     Item,
     Fight,
