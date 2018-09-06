@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from fmv.models import User, Player, Scenario, Scene, Condition, Action, Item, Fight
+from fmv.models import User, Player, Scenario, Scene, Choice, Condition, Action, Item, Fight
 
 
 @admin.register(User)
@@ -79,13 +79,15 @@ class ScenarioAdmin(EntityAdmin):
         return super().get_queryset(request).select_related('intro')
 
 
-class ConditionInlineAdmin(EntityStackedInline):
+class ChoiceInlineAdmin(EntityStackedInline):
     """
-    Administration des conditions dans les choix
+    Administration des choix dans les scénarios
     """
-    model = Condition
+    model = Choice
+    fk_name = 'scene_from'
+    exclude = ('description', 'image', )
     extra = 1
-    autocomplete_fields = ('item', 'scene', )
+    autocomplete_fields = ('scene_to', )
 
 
 class ActionInlineAdmin(EntityStackedInline):
@@ -93,8 +95,9 @@ class ActionInlineAdmin(EntityStackedInline):
     Administration des actions dans les scénarios
     """
     model = Action
+    exclude = ('description', 'image', )
     extra = 1
-    autocomplete_fields = ('item', 'scene', )
+    autocomplete_fields = ('item', )
 
 
 @admin.register(Scene)
@@ -104,27 +107,64 @@ class SceneAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'scenario', 'scene', 'url', 'timecode', ),
+            fields=('name', 'description', 'image', 'scenario', ),
             classes=('wide', ),
         )),
-        (_("Autres"), dict(
-            fields=('fight', 'order', 'count', ),
+        (_("Scène"), dict(
+            fields=('url', 'timecode', 'fight', ),
             classes=('wide', ),
         )),
     )
-    inlines = [ConditionInlineAdmin, ActionInlineAdmin]
+    inlines = [ChoiceInlineAdmin, ActionInlineAdmin]
     filter_horizontal = ()
     list_display_links = ('name',)
-    list_display = ('name', 'scenario', 'scene', 'url', 'order', 'count', 'fight', )
+    list_display = ('name', 'scenario', 'url', )
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
-    autocomplete_fields = ('scenario', 'scene', 'fight', )
+    autocomplete_fields = ('scenario', 'fight', )
     save_on_top = True
     actions_on_bottom = True
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('scenario', 'fight')
+
+
+class ConditionInlineAdmin(EntityStackedInline):
+    """
+    Administration des conditions dans les choix
+    """
+    model = Condition
+    exclude = ('description', 'image', )
+    extra = 1
+    autocomplete_fields = ('item', )
+
+
+@admin.register(Choice)
+class ChoiceAdmin(EntityAdmin):
+    """
+    Administration des choix
+    """
+    fieldsets = (
+        (_("Informations"), dict(
+            fields=('name', 'description', 'image', ),
+            classes=('wide',),
+        )),
+        (_("Choix"), dict(
+            fields=('scene_from', 'scene_to', 'order', 'count', ),
+            classes=('wide',),
+        )),
+    )
+    inlines = [ConditionInlineAdmin]
+    filter_horizontal = ()
+    list_display_links = ('name',)
+    list_display = ('name', 'scene_from', 'scene_to', 'order', 'count', )
+    list_filter = ()
+    search_fields = ('name', 'description', )
+    ordering = ('name', )
+    autocomplete_fields = ('scene_from', 'scene_to', )
+    save_on_top = True
+    actions_on_bottom = True
 
 
 @admin.register(Item)

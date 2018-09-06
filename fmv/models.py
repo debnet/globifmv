@@ -84,26 +84,39 @@ class Scene(Entity, NamedModelMixin):
     """
     Scène
     """
-    scenario = models.OneToOneField(
+    scenario = models.ForeignKey(
         'Scenario', on_delete=models.CASCADE,
         related_name='scenes', verbose_name=_("scénario"))
-    scene = models.ForeignKey(
-        'Scene', blank=True, null=True, on_delete=models.CASCADE,
-        related_name='next', verbose_name=_("scène précédente"))
     url = models.URLField(blank=True, verbose_name=_("URL"))
     timecode = models.FloatField(
         blank=True, null=True, verbose_name=_("timecode"))
     fight = models.ForeignKey(
         'Fight', blank=True, null=True, on_delete=models.SET_NULL,
         related_name='scenes', verbose_name=_("combat"))
-    order = models.PositiveSmallIntegerField(
-        default=1, verbose_name=_("ordre"))
-    count = models.PositiveSmallIntegerField(
-        default=0, verbose_name=_("compteur"))
 
     class Meta:
         verbose_name = _("scène")
         verbose_name_plural = _("scènes")
+
+
+class Choice(Entity, NamedModelMixin):
+    """
+    Choix
+    """
+    scene_from = models.ForeignKey(
+        'Scene', on_delete=models.CASCADE,
+        related_name='choices', verbose_name=_("scène précédente"))
+    scene_to = models.ForeignKey(
+        'Scene', on_delete=models.CASCADE,
+        related_name='next', verbose_name=_("scène suivante"))
+    order = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("ordre"))
+    count = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("compteur"))
+
+    class Meta:
+        verbose_name = _("choix")
+        verbose_name_plural = _("choix")
 
 
 class Action(Entity):
@@ -143,9 +156,9 @@ class Condition(Entity):
         ('|', _("ou")),
     )
 
-    scene = models.ForeignKey(
-        'Scene', on_delete=models.CASCADE,
-        related_name='conditions', verbose_name=_("scène"))
+    choice = models.ForeignKey(
+        'Choice', on_delete=models.CASCADE,
+        related_name='conditions', verbose_name=_("choix"))
     type = models.CharField(
         max_length=1, default='&',
         choices=TYPE, verbose_name=_("type"))
