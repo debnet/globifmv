@@ -1,7 +1,7 @@
 # coding: utf-8
 from django.urls import path
 
-from fmv import api, views
+from fmv import views, api
 
 
 urlpatterns = ([
@@ -9,6 +9,6 @@ urlpatterns = ([
 ], 'fmv')
 
 # API REST
-router = api.router
 api_urlpatterns = ([
-] + router.urls, 'fmv-api')
+
+] + api.router.urls, 'fmv-api')

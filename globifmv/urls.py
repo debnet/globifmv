@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import RedirectView
 from rest_framework.authtoken import views as drf_views
 
-from fmv.urls import urlpatterns as fmv_urls, api_urlpatterns as fmv_api
+from fmv.urls import urlpatterns as fmv_urls, api_urlpatterns as fmv_api_urls
 
 
 admin.site.site_header = _("GlobiFMV")
@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/auth/', drf_views.obtain_auth_token, name='token'),
     # Fallout RPG
     path('', include(fmv_urls)),
-    path('api/fmv/', include(fmv_api)),
+    path('api/', include(fmv_api_urls)),
 ]
 
 # Common framework

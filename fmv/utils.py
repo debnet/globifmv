@@ -7,15 +7,17 @@ from lxml import etree
 REGEX_LINK = re.compile(r'\[{2}(.|[^<>|\[\]]+)(?:(<-|->|\|)(.*))?\]{2}')
 
 
-def import_scenario(file_path):
+def import_harlowe(file_path):
     """
     Permet d'importer un fichier de Twine au format Harlowe
     :param file_path: Chemin du fichier
-    :return: Liste des scènes
+    :return: Rien
     """
     with open(file_path, 'r') as file:
         soup = BeautifulSoup(file, 'lxml')
     story = soup.find('tw-storydata')
+    if not story:
+        return
     tree = etree.fromstring(story.prettify())
     story_name, intro_pid, intro_name = tree.attrib['name'], tree.attrib['startnode'], None
     passages = tree.findall('tw-passagedata')
