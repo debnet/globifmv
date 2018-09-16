@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from fmv.models import User, Player, Scenario, Scene, Choice, Condition, Action, Item, Fight
+from fmv.models import User, Player, Scenario, Scene, Choice, Condition, Action, Item
 
 
 @admin.register(User)
@@ -27,7 +27,7 @@ class PlayerAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'user', 'ip', 'scenario', ),
+            fields=('name', 'description', 'image', 'user', 'ip_address', 'scenario', ),
             classes=('wide', ),
         )),
         (_("Ressources"), dict(
@@ -38,7 +38,7 @@ class PlayerAdmin(EntityAdmin):
     inlines = []
     filter_horizontal = ('items', 'scenes', )
     list_display_links = ('name', )
-    list_display = ('name', 'user', 'ip', 'scenario', 'health', 'money', )
+    list_display = ('name', 'user', 'ip_address', 'scenario', 'health', 'money', )
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
@@ -57,7 +57,7 @@ class ScenarioAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'intro', ),
+            fields=('name', 'description', 'image', 'intro_scene', 'death_scene', ),
             classes=('wide', ),
         )),
         (_("Ressources"), dict(
@@ -68,10 +68,10 @@ class ScenarioAdmin(EntityAdmin):
     inlines = []
     filter_horizontal = ('start_items', )
     list_display_links = ('name', )
-    list_display = ('name', 'intro', )
+    list_display = ('name', 'intro_scene', 'death_scene', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
-    autocomplete_fields = ('intro', )
+    autocomplete_fields = ('intro_scene', 'death_scene', )
     save_on_top = True
     actions_on_bottom = True
 
@@ -111,7 +111,7 @@ class SceneAdmin(EntityAdmin):
             classes=('wide', ),
         )),
         (_("Scène"), dict(
-            fields=('url', 'timecode', 'fight', ),
+            fields=('url', 'timecode', ),
             classes=('wide', ),
         )),
     )
@@ -122,12 +122,12 @@ class SceneAdmin(EntityAdmin):
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
-    autocomplete_fields = ('scenario', 'fight', )
+    autocomplete_fields = ('scenario', )
     save_on_top = True
     actions_on_bottom = True
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('scenario', 'fight')
+        return super().get_queryset(request).select_related('scenario', )
 
 
 class ConditionInlineAdmin(EntityStackedInline):
@@ -174,7 +174,7 @@ class ItemAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'attack', 'defense', ),
+            fields=('name', 'description', 'image', ),
             classes=('wide', ),
         )),
     )
@@ -187,32 +187,3 @@ class ItemAdmin(EntityAdmin):
     save_on_top = True
     actions_on_bottom = True
 
-
-@admin.register(Fight)
-class FightAdmin(EntityAdmin):
-    """
-    Administration des combats
-    """
-    fieldsets = (
-        (_("Informations"), dict(
-            fields=('name', 'description', 'image', ),
-            classes=('wide', ),
-        )),
-        (_("Ennemi"), dict(
-            fields=('health', 'attack', 'defense', ),
-            classes=('wide', ),
-        )),
-        (_("Scènes"), dict(
-            fields=('url_pc_hit', 'url_npc_hit', 'url_pc_miss', 'url_npc_miss', 'url_pc_dead', 'url_npc_dead', ),
-            classes=('wide', ),
-        )),
-    )
-    inlines = []
-    filter_horizontal = ()
-    list_display_links = ('name', )
-    list_display = ('name', 'health', 'attack', 'defense', )
-    search_fields = ('name', 'description', )
-    ordering = ('name', )
-    autocomplete_fields = ()
-    save_on_top = True
-    actions_on_bottom = True
