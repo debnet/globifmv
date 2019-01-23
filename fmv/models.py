@@ -33,18 +33,21 @@ class NamedModelMixin(models.Model):
         abstract = True
 
 
-class Player(Entity, NamedModelMixin):
+class Save(Entity, NamedModelMixin):
     """
-    Joueur
+    Sauvegarde
     """
-    ip_address = models.CharField(
-        max_length=40, verbose_name=_("adresse IP"))
-    scenario = models.ForeignKey(
-        'Scenario', on_delete=models.CASCADE,
-        related_name='players', verbose_name=_("scénario"))
     user = models.ForeignKey(
         'User', blank=True, null=True, on_delete=models.SET_NULL,
         related_name='players', verbose_name=_("utilisateur"))
+    ip_address = models.CharField(
+        max_length=40, blank=True, verbose_name=_("adresse IP"))
+    scene = models.ForeignKey(
+        'Scene', blank=True, null=True, on_delete=models.SET_NULL,
+        related_name='players', verbose_name=_("scène courante"))
+    scenes = models.ManyToManyField(
+        'Scene', blank=True,
+        related_name='+', verbose_name=_("scènes"))
     health = models.SmallIntegerField(
         blank=True, null=True, verbose_name=_("santé"))
     money = models.SmallIntegerField(
@@ -52,13 +55,18 @@ class Player(Entity, NamedModelMixin):
     items = models.ManyToManyField(
         'Item', blank=True,
         related_name='+', verbose_name=_("objets"))
-    scenes = models.ManyToManyField(
-        'Scene', blank=True,
-        related_name='+', verbose_name=_("scènes"))
+
+    def switch_scene(self, scene):
+        if self.scene_id == scene.id:
+            return False
+        self.scene = scene
+        self.scene.apply_action(self)
+        self.save()
+        return True
 
     class Meta:
-        verbose_name = _("joueur")
-        verbose_name_plural = _("joueurs")
+        verbose_name = _("sauvegarde")
+        verbose_name_plural = _("sauvegardes")
 
 
 class Scenario(Entity, NamedModelMixin):
@@ -91,33 +99,37 @@ class Scene(Entity, NamedModelMixin):
     scenario = models.ForeignKey(
         'Scenario', on_delete=models.CASCADE,
         related_name='scenes', verbose_name=_("scénario"))
-    url = models.URLField(blank=True, verbose_name=_("URL"))
+    url = models.URLField(
+        blank=True, verbose_name=_("URL"))
+    url_low = models.URLField(
+        blank=True, verbose_name=_("URL bas-débit"))
     timecode = models.FloatField(
         blank=True, null=True, verbose_name=_("timecode"))
+
+    def get_choices(self, save):
+        choices = []
+        for choice in self.choices.all():
+            if choice.check_save(save):
+                choices.append(choice)
+        return choices
+
+    def apply_action(self, save):
+        for action in self.actions.all():
+            factor = -1 if action.type == '-' else +1
+            if action.health is not None:
+                save.health += action.health * factor
+            if action.money is not None:
+                save.money += action.money * factor
+            if action.item_id:
+                if factor > 0:
+                    save.items.add(action.item_id)
+                else:
+                    save.items.remove(action.item_id)
+        save.save()
 
     class Meta:
         verbose_name = _("scène")
         verbose_name_plural = _("scènes")
-
-
-class Choice(Entity, NamedModelMixin):
-    """
-    Choix
-    """
-    scene_from = models.ForeignKey(
-        'Scene', on_delete=models.CASCADE,
-        related_name='choices', verbose_name=_("scène précédente"))
-    scene_to = models.ForeignKey(
-        'Scene', on_delete=models.CASCADE,
-        related_name='next', verbose_name=_("scène suivante"))
-    order = models.PositiveSmallIntegerField(
-        default=0, verbose_name=_("ordre"))
-    count = models.PositiveSmallIntegerField(
-        default=0, verbose_name=_("compteur"))
-
-    class Meta:
-        verbose_name = _("choix")
-        verbose_name_plural = _("choix")
 
 
 class Action(Entity):
@@ -148,6 +160,49 @@ class Action(Entity):
         verbose_name_plural = _("actions")
 
 
+class Choice(Entity, NamedModelMixin):
+    """
+    Choix
+    """
+    ERROR_CHECK = _("This choice can't be selected because the current save state don't match the requirements.")
+    OPERATOR_ALL, OPERATOR_ANY, OPERATOR_ONE, OPERATOR_NONE = 'all', 'any', 'one', 'none'
+    OPERATORS = (
+        (OPERATOR_ALL, _("toutes les conditions")),
+        (OPERATOR_ANY, _("au moins une condition")),
+        (OPERATOR_ONE, _("une seule condition")),
+        (OPERATOR_NONE, _("aucune condition")),
+    )
+
+    scene_from = models.ForeignKey(
+        'Scene', on_delete=models.CASCADE,
+        related_name='choices', verbose_name=_("scène précédente"))
+    scene_to = models.ForeignKey(
+        'Scene', on_delete=models.CASCADE,
+        related_name='next', verbose_name=_("scène suivante"))
+    order = models.PositiveSmallIntegerField(
+        default=0, verbose_name=_("ordre"))
+    count = models.PositiveSmallIntegerField(
+        default=0, editable=False, verbose_name=_("compteur"))
+    operator = models.CharField(
+        max_length=4, default=OPERATOR_ALL, choices=OPERATORS,
+        verbose_name=_("évaluation"))
+
+    def check_save(self, save):
+        if self.scene_from_id != save.scene_id:
+            return False
+        results = []
+        for condition in self.conditions.all():
+            results.append(condition.check_save(save))
+        return all(results) if self.operator == self.OPERATOR_ALL else \
+            any(results) if self.operator == self.OPERATOR_ANY else \
+            results.count(True) == 1 if self.operator == self.OPERATOR_ONE else \
+            not any(results)
+
+    class Meta:
+        verbose_name = _("choix")
+        verbose_name_plural = _("choix")
+
+
 class Condition(Entity):
     """
     Condition
@@ -159,11 +214,19 @@ class Condition(Entity):
         blank=True, null=True, verbose_name=_("santé"))
     money = models.PositiveSmallIntegerField(
         blank=True, null=True, verbose_name=_("argent"))
-    item = models.ForeignKey(
-        'Item', blank=True, null=True, on_delete=models.SET_NULL,
-        related_name='+', verbose_name=_("objets"))
-    inverse = models.BooleanField(
+    items = models.ManyToManyField(
+        'Item', blank=True, verbose_name=_("objets"))
+    reverse = models.BooleanField(
         default=False, verbose_name=_("inversé"))
+
+    def check_save(self, save):
+        health = self.health is None or save.health is None or (
+            (self.health > save.health) if self.reverse else (self.health <= save.health))
+        money = self.money is None or save.money is None or (
+            (self.money > save.money) if self.reverse else (self.money <= save.money))
+        self_items, save_items = set(self.items.all()), set(save.items.all())
+        items = (not self_items) or ((save_items >= self_items) if self.reverse else (save_items < self_items))
+        return health and money and items
 
     class Meta:
         verbose_name = _("condition")
@@ -174,6 +237,8 @@ class Item(Entity, NamedModelMixin):
     """
     Objet
     """
+    visible = models.BooleanField(
+        default=True, verbose_name=_("visible"))
 
     class Meta:
         verbose_name = _("objet")
@@ -182,10 +247,11 @@ class Item(Entity, NamedModelMixin):
 
 MODELS = (
     User,
-    Player,
+    Save,
     Scenario,
-    Action,
     Scene,
+    Action,
+    Choice,
     Condition,
     Item,
 )

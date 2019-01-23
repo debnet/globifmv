@@ -10,5 +10,8 @@ urlpatterns = ([
 
 # API REST
 api_urlpatterns = ([
-
+    path('scene/<int:scene_id>/choices/<uuid:save_uid>/', api.scene_choices, name='scene_choices_by_save'),
+    path('scene/<int:scene_id>/choices/', api.scene_choices, name='scene_choices'),
+    path('scenario/<int:scenario_id>/start/', api.start_scenario, name='start_scenario'),
+    path('choice/<int:choice_id>/select/<uuid:save_uid>/', api.select_choice, name='select_choice'),
 ] + api.router.urls, 'fmv-api')

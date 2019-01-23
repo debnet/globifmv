@@ -64,5 +64,5 @@ def import_harlowe(file_path):
                 continue
             scene_to = scene_to['scene']
             Choice.objects.create(name=name, scene_from=scene_from, scene_to=scene_to)
-    scenario.intro = by_pid[intro_pid]['scene']
+    scenario.intro_scene_id = by_pid[intro_pid]['scene']
     scenario.save()

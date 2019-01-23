@@ -92,21 +92,7 @@ class Base(Configuration):
     # Authentication backends
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
-        'common.auth.LdapAuthenticationBackend',
     )
-
-    # LDAP
-    LDAP_ENABLE = values.BooleanValue(False)
-    LDAP_LOGIN = values.Value(r'DOMAIN\{username}')
-    LDAP_HOST = values.Value('')
-    LDAP_BASE = values.Value('DC=domain,DC=local')
-    LDAP_FILTER = '(&(objectCategory=person)(objectClass=user)(sAMAccountName={username}))'
-    LDAP_ATTRIBUTES = ['mail', 'title', 'displayName', 'company', 'sn', 'givenName', 'memberOf']
-    LDAP_ADMIN_USERS = values.ListValue([])
-    LDAP_ADMIN_GROUPS = values.ListValue([])
-    LDAP_STAFF_USERS = values.ListValue([])
-    LDAP_STAFF_GROUPS = values.ListValue([])
-    LDAP_GROUP_PREFIX = values.Value("[LDAP] ")
 
     # Password validation
     # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -135,7 +121,7 @@ class Base(Configuration):
 
     LANGUAGES = (
         ('fr', _('Français')),
-        ('en', _('English')),
+        ('en', _('Anglais')),
     )
 
     LOCALE_PATHS = (
@@ -171,7 +157,7 @@ class Base(Configuration):
     # Django REST Framework configuration
     REST_FRAMEWORK = {
         'DEFAULT_PERMISSION_CLASSES': (
-            'rest_framework.permissions.IsAuthenticated',
+            'rest_framework.permissions.IsAuthenticatedOrReadOnly',
         ),
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.TokenAuthentication',
@@ -250,7 +236,7 @@ class Base(Configuration):
     PASSWORD_RESET_TIMEOUT_DAYS = values.IntegerValue(1)
 
     # Gestionnaire utilisé pour l'import des fichiers
-    FILE_UPLOAD_HANDLERS = ('common.utils.TemporaryFileHandler',)
+    FILE_UPLOAD_HANDLERS = ('common.utils.TemporaryFileHandler', )
 
     # Taille du payload maximum autorisée et permissions à l'upload
     DATA_UPLOAD_MAX_MEMORY_SIZE = values.IntegerValue(10485760)

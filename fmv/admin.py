@@ -1,10 +1,13 @@
 # coding: utf-8
-from common.admin import EntityAdmin, EntityStackedInline
+from common.admin import EntityAdmin, EntityTabularInline
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.db.models import Count
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from fmv.models import User, Player, Scenario, Scene, Choice, Condition, Action, Item
+from fmv.models import User, Save, Scenario, Scene, Action, Choice, Condition, Item
 
 
 @admin.register(User)
@@ -20,34 +23,33 @@ class UserAdmin(BaseUserAdmin):
     actions_on_bottom = True
 
 
-@admin.register(Player)
-class PlayerAdmin(EntityAdmin):
+@admin.register(Save)
+class SaveAdmin(EntityAdmin):
     """
-    Administration des joueurs
+    Administration des sauvegardes
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', 'user', 'ip_address', 'scenario', ),
+            fields=('name', 'description', 'image', 'ip_address', 'user', 'scene', 'scenes', ),
             classes=('wide', ),
         )),
         (_("Ressources"), dict(
-            fields=('health', 'money', 'items', 'scenes', ),
+            fields=('health', 'money', 'items', ),
             classes=('wide', ),
         )),
     )
     inlines = []
-    filter_horizontal = ('items', 'scenes', )
     list_display_links = ('name', )
-    list_display = ('name', 'user', 'ip_address', 'scenario', 'health', 'money', )
-    list_filter = ('scenario', )
+    list_display = ('name', 'user', 'ip_address', 'scene', 'health', 'money', )
+    list_filter = ('scene', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
-    autocomplete_fields = ('user', 'scenario', )
+    autocomplete_fields = ('user', 'scene', 'scenes', 'items', )
     save_on_top = True
     actions_on_bottom = True
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('scenario')
+        return super().get_queryset(request).select_related('user', 'scene')
 
 
 @admin.register(Scenario)
@@ -66,36 +68,31 @@ class ScenarioAdmin(EntityAdmin):
         )),
     )
     inlines = []
-    filter_horizontal = ('start_items', )
     list_display_links = ('name', )
-    list_display = ('name', 'intro_scene', 'death_scene', )
+    list_display = ('name', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
-    autocomplete_fields = ('intro_scene', 'death_scene', )
+    autocomplete_fields = ('intro_scene', 'death_scene', 'start_items', )
     save_on_top = True
     actions_on_bottom = True
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('intro')
 
-
-class ChoiceInlineAdmin(EntityStackedInline):
+class ChoiceInlineAdmin(EntityTabularInline):
     """
     Administration des choix dans les scénarios
     """
     model = Choice
     fk_name = 'scene_from'
-    exclude = ('description', 'image', )
+    exclude = ('description', 'image', 'operator', )
     extra = 1
     autocomplete_fields = ('scene_to', )
 
 
-class ActionInlineAdmin(EntityStackedInline):
+class ActionInlineAdmin(EntityTabularInline):
     """
-    Administration des actions dans les scénarios
+    Administration des actions dans les choix
     """
     model = Action
-    exclude = ('description', 'image', )
     extra = 1
     autocomplete_fields = ('item', )
 
@@ -111,14 +108,13 @@ class SceneAdmin(EntityAdmin):
             classes=('wide', ),
         )),
         (_("Scène"), dict(
-            fields=('url', 'timecode', ),
+            fields=('url', 'url_low', 'timecode', ),
             classes=('wide', ),
         )),
     )
     inlines = [ChoiceInlineAdmin, ActionInlineAdmin]
-    filter_horizontal = ()
     list_display_links = ('name',)
-    list_display = ('name', 'scenario', 'url', )
+    list_display = ('name', 'scenario', 'url', 'nb_choices', )
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
@@ -126,18 +122,24 @@ class SceneAdmin(EntityAdmin):
     save_on_top = True
     actions_on_bottom = True
 
+    def nb_choices(self, obj):
+        url = reverse('admin:fmv_choice_changelist')
+        return mark_safe(f'<a href="{url}?scene_from={obj.id}">{obj.nb_choices}</a>')
+    nb_choices.short_description = _("Choix")
+    nb_choices.admin_order_field = 'nb_choices'
+
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('scenario', )
+        return super().get_queryset(request).select_related('scenario').annotate(
+            nb_choices=Count('choices'))
 
 
-class ConditionInlineAdmin(EntityStackedInline):
+class ConditionInlineAdmin(EntityTabularInline):
     """
     Administration des conditions dans les choix
     """
     model = Condition
-    exclude = ('description', 'image', )
     extra = 1
-    autocomplete_fields = ('item', )
+    autocomplete_fields = ('items', )
 
 
 @admin.register(Choice)
@@ -148,23 +150,31 @@ class ChoiceAdmin(EntityAdmin):
     fieldsets = (
         (_("Informations"), dict(
             fields=('name', 'description', 'image', ),
-            classes=('wide',),
+            classes=('wide', ),
         )),
         (_("Choix"), dict(
-            fields=('scene_from', 'scene_to', 'order', 'count', ),
-            classes=('wide',),
+            fields=('scene_from', 'scene_to', 'order', 'operator', ),
+            classes=('wide', ),
         )),
     )
     inlines = [ConditionInlineAdmin]
-    filter_horizontal = ()
-    list_display_links = ('name',)
-    list_display = ('name', 'scene_from', 'scene_to', 'order', 'count', )
+    list_display_links = ('name', )
+    list_display = ('name', 'scene_from', 'scene_to', 'order', 'count', 'nb_conditions', )
     list_filter = ()
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('scene_from', 'scene_to', )
     save_on_top = True
     actions_on_bottom = True
+
+    def nb_conditions(self, obj):
+        return obj.nb_conditions
+    nb_conditions.short_description = _("Conditions")
+    nb_conditions.admin_order_field = 'nb_choices'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('scene_from', 'scene_to').annotate(
+            nb_conditions=Count('conditions'))
 
 
 @admin.register(Item)
@@ -178,7 +188,6 @@ class ItemAdmin(EntityAdmin):
             classes=('wide', ),
         )),
     )
-    filter_horizontal = ()
     list_display_links = ('name', )
     list_display = ('name', )
     search_fields = ('name', 'description', )
@@ -186,4 +195,3 @@ class ItemAdmin(EntityAdmin):
     autocomplete_fields = ()
     save_on_top = True
     actions_on_bottom = True
-
