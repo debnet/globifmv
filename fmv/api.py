@@ -14,10 +14,11 @@ router, all_serializers, all_viewsets = create_api(*MODELS)
 
 @api_view(['GET'], serializer=create_model_serializer(Choice, exclude=('items', )))
 @permission_classes([AllowAny, ])
-def scene_choices(request, scene_id, save_uid=None):
+def scene_choices(request, scene_id):
     """
     Choix de scène
     """
+    save_uid = request.query_params.get('save_uid')
     if save_uid:
         save = get_object_or_404(Save.objects.prefetch_related('items'), uuid=save_uid)
         choices = []
@@ -26,8 +27,7 @@ def scene_choices(request, scene_id, save_uid=None):
             if choice.check_save(save):
                 choices.append(choice)
         return choices
-    else:
-        return Choice.objects.filter(scene_from=scene_id).order_by('order')
+    return Choice.objects.filter(scene_from=scene_id).order_by('order')
 
 
 @api_view(['GET'], serializer=create_model_serializer(Save, exclude=('scenes', 'items', )))
@@ -36,27 +36,39 @@ def start_scenario(request, scenario_id):
     """
     Démarrer un nouveau scénario
     """
+    ip_address = request.META.get('REMOTE_ADDR') or ''
     scenario = get_object_or_404(Scenario, id=scenario_id)
-    save = Save.objects.create(
-        user=request.user or None,
-        ip_address=request.META.get('REMOTE_ADDR') or '',
-        scene=scenario.intro_scene,
-        health=scenario.start_health,
-        money=scenario.start_money)
+    save_uid = request.query_params.get('save_uid')
+    if save_uid:
+        save = get_object_or_404(Save, uuid=save_uid)
+        save.user = request.user or None
+        save.ip_address = ip_address
+        save.scene = scenario.intro_scene
+        save.health = scenario.start_health
+        save.money = scenario.start_money
+        save.save()
+    else:
+        save = Save.objects.create(
+            user=request.user or None,
+            ip_address=ip_address,
+            scene=scenario.intro_scene,
+            health=scenario.start_health,
+            money=scenario.start_money)
     if scenario.intro_scene:
-        save.scenes.set(scenario.intro_scene)
+        save.scenes.add(scenario.intro_scene)
     save.items.set(scenario.start_items.all())
     return save
 
 
 @api_view(['GET'], serializer=create_model_serializer(Scene))
 @permission_classes([AllowAny, ])
-def select_choice(request, choice_id, save_uid=None):
+def select_choice(request, choice_id):
     """
     Sélectionner un choix de la scène
     """
     choice = get_object_or_404(
         Choice.objects.select_related('scene_from', 'scene_to').prefetch_related('conditions'), id=choice_id)
+    save_uid = request.query_params.get('save_uid')
     if save_uid:
         save = get_object_or_404(Save.objects.prefetch_related('items'), uuid=save_uid)
         if not choice.check_save(save):
