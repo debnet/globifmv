@@ -99,8 +99,8 @@ class Scene(Entity, NamedModelMixin):
     scenario = models.ForeignKey(
         'Scenario', on_delete=models.CASCADE,
         related_name='scenes', verbose_name=_("scénario"))
-    url = models.URLField(
-        blank=True, verbose_name=_("URL"))
+    url_high = models.URLField(
+        blank=True, verbose_name=_("URL haut-débit"))
     url_low = models.URLField(
         blank=True, verbose_name=_("URL bas-débit"))
     timecode = models.FloatField(

@@ -108,13 +108,13 @@ class SceneAdmin(EntityAdmin):
             classes=('wide', ),
         )),
         (_("Scène"), dict(
-            fields=('url', 'url_low', 'timecode', ),
+            fields=('url_high', 'url_low', 'timecode', ),
             classes=('wide', ),
         )),
     )
     inlines = [ChoiceInlineAdmin, ActionInlineAdmin]
     list_display_links = ('name',)
-    list_display = ('name', 'scenario', 'url', 'nb_choices', )
+    list_display = ('name', 'scenario', 'url_high', 'nb_choices', )
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )

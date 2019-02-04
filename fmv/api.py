@@ -1,4 +1,5 @@
 # coding: utf-8
+from common.api.base import CONFIGS, DEFAULT_CONFIG
 from common.api.utils import api_view_with_serializer as api_view, create_api, create_model_serializer
 from django.db.models import F
 from rest_framework.decorators import permission_classes
@@ -8,11 +9,17 @@ from rest_framework.permissions import AllowAny
 
 from fmv.models import MODELS, Choice, Save, Scenario, Scene
 
+
+# Surcharge des options de base
+CONFIGS.update({
+    Save: dict(many_to_many=True, depth=1, exclude=('scenes', )),
+})
+
 # Création des APIs REST standard pour les modèles de cette application
 router, all_serializers, all_viewsets = create_api(*MODELS)
 
 
-@api_view(['GET'], serializer=create_model_serializer(Choice, exclude=('items', )))
+@api_view(['GET'], serializer=create_model_serializer(Choice))
 @permission_classes([AllowAny, ])
 def scene_choices(request, scene_id):
     """
@@ -22,7 +29,7 @@ def scene_choices(request, scene_id):
     if save_uid:
         save = get_object_or_404(Save.objects.prefetch_related('items'), uuid=save_uid)
         choices = []
-        query = Choice.objects.prefetch_related('items').filter(scene_from=scene_id).order_by('order')
+        query = Choice.objects.filter(scene_from=scene_id).order_by('order')
         for choice in query:
             if choice.check_save(save):
                 choices.append(choice)
