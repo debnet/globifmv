@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    depends_on:
+      - postgres
+      - redis
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/globifmv
+    stdin_open: true
+    tty: true
+    environment:
+      DJANGO_SETTINGS_MODULE: 'globifmv.settings'
+      DJANGO_CONFIGURATION: 'Test'
+      DJANGO_SECRET_KEY: '1'
+      DJANGO_REDIS_CACHE: 'redis:6379:1'
+      DJANGO_CELERY_BROKER_URL: 'redis://redis:6379/1'
+      DATABASE_URL: 'postgres://globifmv:globifmv@postgres:5432/globifmv'
+    command: >
+      bash -c "python manage.py migrate --no-input &&
+               python manage.py collectstatic --no-input &&
+               python manage.py compilemessages &&
+               python manage.py runserver 0.0.0.0:8000"
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=globifmv
+      - POSTGRES_PASSWORD=globifmv
+      - POSTGRES_DB=globifmv
+      - PGDATA=/globifmv
+    ports:
+      - 5432
+    volumes:
+      - pgdata:/globifmv
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379
+    volumes:
+      - redisdata:/globifmv
+
+volumes:
+  pgdata:
+  redisdata:
