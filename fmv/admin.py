@@ -184,12 +184,13 @@ class ItemAdmin(EntityAdmin):
     """
     fieldsets = (
         (_("Informations"), dict(
-            fields=('name', 'description', 'image', ),
+            fields=('name', 'description', 'image', 'visible', ),
             classes=('wide', ),
         )),
     )
     list_display_links = ('name', )
     list_display = ('name', )
+    list_filter = ('visible', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ()
