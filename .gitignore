@@ -105,3 +105,9 @@ venv.bak/
 
 # PyCharm
 .idea/
+
+# FrontEnd
+node_modules
+package-lock.json
+static/app.js
+webpack-stats.json

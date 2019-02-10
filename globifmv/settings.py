@@ -44,6 +44,7 @@ class Base(Configuration):
         'compressor',
         # Applications
         'fmv',
+        'webpack_loader'
     ]
 
     # Middleware
@@ -76,7 +77,7 @@ class Base(Configuration):
     TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': (),
+            'DIRS': [os.path.join(BASE_DIR, 'fmv/templates/fmv')],
             'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
@@ -402,4 +403,13 @@ class Test(Base):
             'LOCATION': 'unique-snowflake',
             'TIMEOUT': 3600,
         },
+    }
+
+    # Webpack pour le frontend
+    WEBPACK_LOADER = {
+        'DEFAULT': {
+            'CACHE': DEBUG,
+            'BUNDLE_DIR_NAME': '',
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+        }
     }
