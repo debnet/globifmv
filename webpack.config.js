@@ -22,8 +22,11 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
                 loader: 'babel-loader',
+                include: [
+                  path.resolve('assets'),
+                  path.resolve('node_modules/vue-awesome')
+                ]
             },
             {
                 test: /\.vue$/,

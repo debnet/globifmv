@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { getScenarios } from '../utils/requests'
+import { getScenarios, getNextPageScenarios } from '../utils/requests'
 export default {
 	data () {
 		return {
@@ -85,5 +85,9 @@ export default {
 
 .content{
 	padding: 5px;
+}
+
+body{
+  background-color: black;
 }
 </style>
