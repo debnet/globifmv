@@ -5,12 +5,13 @@ from django.db.models import F
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from fmv.models import MODELS, Choice, Save, Scenario, Scene
 
 
 # Surcharge des options de base
+DEFAULT_CONFIG.update(permissions=(IsAuthenticatedOrReadOnly, ))
 CONFIGS.update({
     Save: dict(many_to_many=True, depth=1, exclude=('scenes', )),
 })
