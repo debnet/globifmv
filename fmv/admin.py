@@ -153,7 +153,7 @@ class ChoiceAdmin(EntityAdmin):
             classes=('wide', ),
         )),
         (_("Choix"), dict(
-            fields=('scene_from', 'scene_to', 'order', 'operator', ),
+            fields=('scene_from', 'scene_to', 'timecode', 'order', 'operator', ),
             classes=('wide', ),
         )),
     )

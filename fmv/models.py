@@ -179,6 +179,8 @@ class Choice(Entity, NamedModelMixin):
     scene_to = models.ForeignKey(
         'Scene', on_delete=models.CASCADE,
         related_name='next', verbose_name=_("scène suivante"))
+    timecode = models.FloatField(
+        blank=True, null=True, verbose_name=_("timecode"))
     order = models.PositiveSmallIntegerField(
         default=0, verbose_name=_("ordre"))
     count = models.PositiveSmallIntegerField(

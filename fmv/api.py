@@ -49,7 +49,7 @@ def start_scenario(request, scenario_id):
     save_uid = request.query_params.get('save_uid')
     if save_uid:
         save = get_object_or_404(Save, uuid=save_uid)
-        save.user = request.user or None
+        save.user = request.user if not request.user.is_anonymous else None
         save.ip_address = ip_address
         save.scene = scenario.intro_scene
         save.health = scenario.start_health
@@ -57,7 +57,7 @@ def start_scenario(request, scenario_id):
         save.save()
     else:
         save = Save.objects.create(
-            user=request.user or None,
+            user=request.user if not request.user.is_anonymous else None,
             ip_address=ip_address,
             scene=scenario.intro_scene,
             health=scenario.start_health,
@@ -84,3 +84,12 @@ def select_choice(request, choice_id):
         if save.switch_scene(choice.scene_to):
             Choice.objects.filter(id=choice_id).update(count=F('count') + 1)
     return choice.scene_to
+
+
+@api_view(['GET'], serializer=all_serializers[Save])
+@permission_classes([AllowAny, ])
+def get_save(request, save_uid):
+    """
+    Visualiser une sauvegarde à partir de son UUID
+    """
+    return Save.objects.select_related('scene', 'user', 'current_user').get(uuid=save_uid)

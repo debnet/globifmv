@@ -13,4 +13,5 @@ api_urlpatterns = ([
     path('scene/<int:scene_id>/choices/', api.scene_choices, name='scene_choices'),
     path('scenario/<int:scenario_id>/start/', api.start_scenario, name='start_scenario'),
     path('choice/<int:choice_id>/select/', api.select_choice, name='select_choice'),
+    path('save/<uuid:save_uid>/', api.get_save, name='save_by_uid'),
 ] + api.router.urls, 'fmv-api')
