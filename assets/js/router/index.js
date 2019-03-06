@@ -6,7 +6,7 @@ module.exports = {
       component: require('../pages/index.vue').default
     },
     {
-      path: '/play/:quality/:scenarId/:sceneId',
+      path: '/play/',
       name: 'scenar',
       component: require('../pages/game.vue').default
     }

@@ -24,14 +24,15 @@
              ok-only ok-title="Annuler"
              ok-variant="outline-dark"
              size="sm">
-      <b-button variant="outline-dark" :to="{ name: 'scenar', params: { quality: 'SD', scenarId: selectedScenar, sceneId: selectedScene } }">SD</b-button>
-      <b-button variant="outline-dark" :to="{ name: 'scenar', params: { quality: 'HD', scenarId: selectedScenar, sceneId: selectedScene } }">HD</b-button>
+      <b-button variant="outline-dark" @click="goTo('SD', selectedScenar, selectedScene)">SD</b-button>
+      <b-button variant="outline-dark" @click="goTo('HD', selectedScenar, selectedScene)">HD</b-button>
     </b-modal>
 	</div>
 </template>
 
 <script>
 import { getScenarios, getNextPageScenarios } from '../utils/requests'
+import { mapActions } from 'vuex'
 export default {
 	data () {
 		return {
@@ -42,10 +43,23 @@ export default {
 		}
 	},
 	methods: {
+    ...mapActions({
+      setQuality: 'globiFmv/setQuality',
+      setScenario: 'globiFmv/setScenario',
+      setScene: 'globiFmv/setScene',
+      startScenario: 'globiFmv/startScenario'
+    }),
     onClickOpenScenario (scenarioId, sceneId){
       this.modalShow = true
       this.selectedScenar = scenarioId
       this.selectedScene = sceneId
+    },
+    goTo: async function (quality, scenario, scene) {
+      this.setQuality(quality)
+      this.setScenario(scenario)
+      this.setScene(scene)
+      await this.startScenario()
+      this.$router.push({ name: 'scenar' })
     }
 	},
 	components: {
