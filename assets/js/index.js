@@ -5,12 +5,15 @@ import Icon from 'vue-awesome'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import { routes } from './router'
+import store from '../store'
 
 Vue.use(BootstrapVue)
 Vue.component('icon', Icon)
 Vue.use(VueRouter)
 
+
 const router = new VueRouter({ routes })
 const app = new Vue({
-    router
+    router,
+    store
 }).$mount('#app')
