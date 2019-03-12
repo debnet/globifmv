@@ -6,8 +6,7 @@ const state = {
   scene: null,
   save: null,
   health: null,
-  money: null,
-  displayChoices: false
+  money: null
 }
 
 // getters
@@ -17,8 +16,7 @@ const getters = {
   scene: (state) => state.scene,
   save: (state) => state.save,
   health: (state) => state.health,
-  money: (state) => state.money,
-  displayChoices: (state) => state.displayChoices
+  money: (state) => state.money
 }
 
 // actions
@@ -35,11 +33,8 @@ const actions = {
   startScenario: async function ({ commit, state }) {
     var data = await startScenario(state.scenario)
     if(data && data.status === 200) {
-      commit('initSave', data.data.uuid, data.data.health, data.data.money)
+      commit('initSave', data.data)
     }
-  },
-  setDisplayChoices ({ commit }, displayChoices) {
-    commit('setDisplayChoices', displayChoices)
   }
 }
 
@@ -56,13 +51,10 @@ const mutations = {
   setScene (state, id) {
     state.scene = id
   },
-  initSave (state, save, health, money) {
-    state.save = save,
-    state.health = health,
-    state.money = money
-  },
-  setDisplayChoices (state, displayChoices) {
-    state.displayChoices = displayChoices
+  initSave (state, data) {
+    state.save = data.uuid,
+    state.health = data.health,
+    state.money = data.money
   }
 }
 
