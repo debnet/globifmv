@@ -2,6 +2,7 @@
 from common.api.base import CONFIGS, DEFAULT_CONFIG
 from common.api.utils import api_view_with_serializer as api_view, create_api, create_model_serializer
 from django.db.models import F
+from rest_framework import serializers
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -19,8 +20,27 @@ CONFIGS.update({
 # Création des APIs REST standard pour les modèles de cette application
 router, all_serializers, all_viewsets = create_api(*MODELS)
 
+# Serializers
+ChoiceSerializer = create_model_serializer(Choice)
+SceneSerializer = create_model_serializer(Scene)
 
-@api_view(['GET'], serializer=create_model_serializer(Choice))
+
+class SaveWithChoicesSerializer(all_serializers[Save]):
+    """
+    Serializer de la sauvegarde avec les choix possibles
+    """
+    choices = serializers.SerializerMethodField()
+
+    def get_choices(self, save):
+        choices = []
+        query = Choice.objects.filter(scene_from_id=save.scene_id).order_by('order')
+        for choice in query:
+            if choice.check_save(save):
+                choices.append(choice)
+        return ChoiceSerializer(choices, many=True, context=self.context).data
+
+
+@api_view(['GET'], serializer=ChoiceSerializer)
 @permission_classes([AllowAny, ])
 def scene_choices(request, scene_id):
     """
@@ -38,7 +58,7 @@ def scene_choices(request, scene_id):
     return Choice.objects.filter(scene_from=scene_id).order_by('order')
 
 
-@api_view(['GET'], serializer=create_model_serializer(Save, exclude=('scenes', 'items', )))
+@api_view(['GET'], serializer=SaveWithChoicesSerializer)
 @permission_classes([AllowAny, ])
 def start_scenario(request, scenario_id):
     """
@@ -68,15 +88,15 @@ def start_scenario(request, scenario_id):
     return save
 
 
-@api_view(['GET'], serializer=create_model_serializer(Scene))
+@api_view(['GET'], serializer=SceneSerializer)
 @permission_classes([AllowAny, ])
-def select_choice(request, choice_id):
+def select_choice(request, choice_id, save_uid=None):
     """
     Sélectionner un choix de la scène
     """
     choice = get_object_or_404(
         Choice.objects.select_related('scene_from', 'scene_to').prefetch_related('conditions'), id=choice_id)
-    save_uid = request.query_params.get('save_uid')
+    save_uid = save_uid or request.query_params.get('save_uid')
     if save_uid:
         save = get_object_or_404(Save.objects.prefetch_related('items'), uuid=save_uid)
         if not choice.check_save(save):
@@ -86,10 +106,10 @@ def select_choice(request, choice_id):
     return choice.scene_to
 
 
-@api_view(['GET'], serializer=all_serializers[Save])
+@api_view(['GET'], serializer=SaveWithChoicesSerializer)
 @permission_classes([AllowAny, ])
 def get_save(request, save_uid):
     """
     Visualiser une sauvegarde à partir de son UUID
     """
-    return Save.objects.select_related('scene', 'user', 'current_user').get(uuid=save_uid)
+    return get_object_or_404(Save.objects.select_related('scene', 'user', 'current_user'), uuid=save_uid)
