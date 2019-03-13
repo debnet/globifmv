@@ -2,7 +2,7 @@
 from common.models import Entity
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.translation import ugettext_lazy as _, ugettext as __
+from django.utils.translation import ugettext_lazy as _
 
 
 class User(AbstractUser):
@@ -61,8 +61,12 @@ class Save(Entity, NamedModelMixin):
             return False
         self.scene = scene
         self.scene.apply_action(self)
+        self.scenes.add(self.scene)
         self.save()
         return True
+
+    def __str__(self):
+        return self.name or str(self.uuid or _("(non enregistré)"))
 
     class Meta:
         verbose_name = _("sauvegarde")
@@ -86,6 +90,9 @@ class Scenario(Entity, NamedModelMixin):
     start_items = models.ManyToManyField(
         'Item', blank=True, related_name='+',
         verbose_name=_("objets de départ"))
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = _("scénario")
@@ -126,6 +133,9 @@ class Scene(Entity, NamedModelMixin):
                 else:
                     save.items.remove(action.item_id)
         save.save()
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = _("scène")
@@ -200,6 +210,9 @@ class Choice(Entity, NamedModelMixin):
             results.count(True) == 1 if self.operator == self.OPERATOR_ONE else \
             not any(results)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = _("choix")
         verbose_name_plural = _("choix")
@@ -241,6 +254,9 @@ class Item(Entity, NamedModelMixin):
     """
     visible = models.BooleanField(
         default=True, verbose_name=_("visible"))
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = _("objet")

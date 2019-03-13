@@ -39,9 +39,9 @@ class SaveAdmin(EntityAdmin):
         )),
     )
     inlines = []
-    list_display_links = ('name', )
-    list_display = ('name', 'user', 'ip_address', 'scene', 'health', 'money', )
-    list_filter = ('scene', )
+    list_display_links = ('id', 'name', )
+    list_display = ('__str__', 'user', 'ip_address', 'scene', 'health', 'money', )
+    list_filter = ('scene__scenario', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('user', 'scene', 'scenes', 'items', )
@@ -68,13 +68,16 @@ class ScenarioAdmin(EntityAdmin):
         )),
     )
     inlines = []
-    list_display_links = ('name', )
-    list_display = ('name', )
+    list_display_links = ('id', 'name', )
+    list_display = ('name', 'intro_scene', 'death_scene', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
     autocomplete_fields = ('intro_scene', 'death_scene', 'start_items', )
     save_on_top = True
     actions_on_bottom = True
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('intro_scene', 'death_scene')
 
 
 class ChoiceInlineAdmin(EntityTabularInline):
@@ -113,7 +116,7 @@ class SceneAdmin(EntityAdmin):
         )),
     )
     inlines = [ChoiceInlineAdmin, ActionInlineAdmin]
-    list_display_links = ('name',)
+    list_display_links = ('id', 'name',)
     list_display = ('name', 'scenario', 'url_high', 'nb_choices', )
     list_filter = ('scenario', )
     search_fields = ('name', 'description', )
@@ -158,7 +161,7 @@ class ChoiceAdmin(EntityAdmin):
         )),
     )
     inlines = [ConditionInlineAdmin]
-    list_display_links = ('name', )
+    list_display_links = ('id', 'name', )
     list_display = ('name', 'scene_from', 'scene_to', 'order', 'count', 'nb_conditions', )
     list_filter = ()
     search_fields = ('name', 'description', )
@@ -188,8 +191,8 @@ class ItemAdmin(EntityAdmin):
             classes=('wide', ),
         )),
     )
-    list_display_links = ('name', )
-    list_display = ('name', )
+    list_display_links = ('id', 'name', )
+    list_display = ('name', 'visible', )
     list_filter = ('visible', )
     search_fields = ('name', 'description', )
     ordering = ('name', )
