@@ -112,7 +112,7 @@ def get_save_by_uid(request, save_uid):
     Visualiser une sauvegarde à partir de son UUID
     """
     return get_object_or_404(
-        Save.objects.select_related('scene', 'user', 'current_user').prefetch_related('items'), uuid=save_uid)
+        Save.objects.select_related('scene', 'user', 'current_user').prefetch_related('items', 'scenes'), uuid=save_uid)
 
 
 @api_view(['GET'], serializer=SaveWithChoicesSerializer)
@@ -124,7 +124,7 @@ def select_choice_from_save(request, save_uid, choice_id):
     choice = get_object_or_404(
         Choice.objects.select_related('scene_from', 'scene_to').prefetch_related('conditions'), id=choice_id)
     save = get_object_or_404(
-        Save.objects.select_related('scene', 'user', 'current_user').prefetch_related('items'), uuid=save_uid)
+        Save.objects.select_related('scene', 'user', 'current_user').prefetch_related('items', 'scenes'), uuid=save_uid)
     if not choice.check_save(save):
         raise ValidationError(Choice.ERROR_CHECK)
     if save.switch_scene(choice.scene_to):
