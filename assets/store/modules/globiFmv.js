@@ -1,10 +1,12 @@
-import { startScenario } from '../../js/utils/requests'
+import { startScenario, setChoice } from '../../js/utils/requests'
 
 const state = {
   quality: '',
   scenario: null,
   scene: null,
   save: null,
+  choice: null,
+  choices: null,
   health: null,
   money: null
 }
@@ -15,6 +17,8 @@ const getters = {
   scenario: (state) => state.scenario,
   scene: (state) => state.scene,
   save: (state) => state.save,
+  choice: (state) => state.choice,
+  choices: (state) => state.choices,
   health: (state) => state.health,
   money: (state) => state.money
 }
@@ -30,10 +34,19 @@ const actions = {
   setScene ({ commit }, scene) {
     commit('setScene', scene)
   },
+  setChoice ({ commit }, choice) {
+    commit('setChoice', choice)
+  },
   startScenario: async function ({ commit, state }) {
     var data = await startScenario(state.scenario)
     if(data && data.status === 200) {
-      commit('initSave', data.data)
+      commit('setSave', data.data)
+    }
+  },
+  changeScene: async function ({commit,state}) {
+    var data = await setChoice(state.choice, state.save)
+    if(data && data.status === 200) {
+      commit('setSave', data.data)
     }
   }
 }
@@ -51,10 +64,17 @@ const mutations = {
   setScene (state, id) {
     state.scene = id
   },
-  initSave (state, data) {
+
+  setChoice (state, choice) {
+    state.choice = choice
+  },
+
+  setSave (state, data) {
     state.save = data.uuid,
     state.health = data.health,
-    state.money = data.money
+    state.money = data.money,
+    state.choices = data.choices,
+    state.scene = data.scene
   }
 }
 

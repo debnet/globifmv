@@ -58,7 +58,7 @@ export default {
       this.setQuality(quality)
       this.setScenario(scenario)
       this.setScene(scene)
-      await this.startScenario()
+      var data = await this.startScenario()
       this.$router.push({ name: 'scenar' })
     }
 	},

@@ -21,10 +21,6 @@ export default {
     video: {
       type: String,
       required: true
-    },
-    timeCode: {
-      type: Number,
-      default: 0
     }
   },
   methods : {

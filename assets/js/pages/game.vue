@@ -2,8 +2,7 @@
 	<div>
 		<div class="video">
       <b-button :to="{ name: 'home' }" class="home"><icon name="arrow-circle-left" scale="2" class="home-icone"/></b-button>
-      <videoPlayer :video="urlVideo"
-                   :timeCode="scene.timecode"/>
+      <videoPlayer :video="urlVideo"/>
       <div id="choices">
         <div class="d-flex align-items-end justify-content-center">
           <b-button-group vertical class="mx-auto">
@@ -34,21 +33,19 @@
 import videoPlayer from '../components/Video.vue'
 import 'vue-awesome/icons/arrow-circle-left'
 import 'vue-awesome/icons/heart'
-import { getScene, getChoices, setChoice } from '../utils/requests'
 import { mapGetters, mapActions } from 'vuex'
 import { EventBus } from '../utils/event-bus.js'
 export default {
 	data () {
 		return {
-      scene: {},
-      choices: [],
       interval: null
 		}
   },
   computed: {
     ...mapGetters({
       quality: 'globiFmv/quality',
-      sceneId: 'globiFmv/scene',
+      scene: 'globiFmv/scene',
+      choices: 'globiFmv/choices',
       save: 'globiFmv/save',
       health: 'globiFmv/health',
       money: 'globiFmv/money'
@@ -74,31 +71,13 @@ export default {
   },
 	methods: {
     ...mapActions({
-      setScene: 'globiFmv/setScene'
+      setScene: 'globiFmv/setScene',
+      setChoice: 'globiFmv/setChoice',
+      changeScene: 'globiFmv/changeScene'
     }),
-    getDataScene: async function() {
-      let dataScene
-      try {
-        dataScene = await getScene(this.sceneId)
-        this.$set(this, 'scene', dataScene.data)
-      } finally {
-
-      }
-    },
-    getDataChoices: async function () {
-      let dataChoices
-      try {
-        dataChoices = await getChoices(this.sceneId, this.save)
-        this.choices = dataChoices.data
-      } finally {
-
-      }
-    },
     gotTo: async function (choiceId) {
-      const dataScene = await setChoice (choiceId, this.save)
-      this.setScene(dataScene.data.id)
-      this.$set(this, 'scene', dataScene.data)
-      this.getDataChoices()
+      this.setChoice(choiceId)
+      this.changeScene()
     },
     verifDisplayChoice (timer) {
       let scope = this
@@ -118,8 +97,6 @@ export default {
 	},
 	created: async function () {
     EventBus.$on('video-timer', this.verifDisplayChoice);
-    this.getDataScene()
-    this.getDataChoices()
   },
   destroyed: function () {
     EventBus.$off('video-timer', this.verifDisplayChoice)
