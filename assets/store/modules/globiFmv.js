@@ -6,9 +6,10 @@ const state = {
   scene: null,
   save: null,
   choice: null,
-  choices: null,
+  choices: [],
   health: null,
-  money: null
+  money: null,
+  items: []
 }
 
 // getters
@@ -20,7 +21,8 @@ const getters = {
   choice: (state) => state.choice,
   choices: (state) => state.choices,
   health: (state) => state.health,
-  money: (state) => state.money
+  money: (state) => state.money,
+  items: (state) => state.items
 }
 
 // actions
@@ -74,7 +76,8 @@ const mutations = {
     state.health = data.health,
     state.money = data.money,
     state.choices = data.choices,
-    state.scene = data.scene
+    state.scene = data.scene,
+    state.items = data.items
   }
 }
 

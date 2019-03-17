@@ -25,6 +25,22 @@
           <span>Argent : {{money}}</span>
         </div>
       </div>
+      <div v-if="items.length > 0" class="items">
+        Inventaire
+        <div class="d-flex flex-row flex-wrap align-items-stretch">
+          <div class="item"
+              v-for="item in items"
+              :key="item.id">
+            <b-img :src="item.image"
+                  :alt="item.name"
+                  :id="'item' + item.id"/>
+            <b-popover :target="'item' + item.id"
+                      :content="item.description"
+                      placement="top"
+                      triggers="hover"/>
+          </div>
+        </div>
+      </div>
     </div>
 	</div>
 </template>
@@ -48,7 +64,8 @@ export default {
       choices: 'globiFmv/choices',
       save: 'globiFmv/save',
       health: 'globiFmv/health',
-      money: 'globiFmv/money'
+      money: 'globiFmv/money',
+      items: 'globiFmv/items'
     }),
     urlVideo () {
       if(this.scene && (this.scene.url_high || this.scene.url_low) && (this.quality === 'HD' || this.quality === 'SD')){
@@ -131,5 +148,13 @@ export default {
 
 .life svg {
   padding-right: 5px; 
+}
+
+.items {
+  padding: 0 0.5rem;
+}
+
+.item img {
+  max-height: 10vh;
 }
 </style>
