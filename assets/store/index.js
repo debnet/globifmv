@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import globiFmv from './modules/globiFmv'
+import globifmv from './modules/globifmv'
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
-  modules: {
-    globiFmv
-  }
+    modules: {
+        globifmv
+    }
 })

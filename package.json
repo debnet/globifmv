@@ -30,11 +30,11 @@
     "vue": "^2.6.4",
     "vue-hot-reload-api": "^2.3.1",
     "vue-html-loader": "^1.2.4",
-    "vue-loader": "^15.6.2",
+    "vue-loader": "^15.7.0",
     "vue-template-compiler": "^2.6.4",
-    "webpack": "^4.29.3",
+    "webpack": "^4.29.6",
     "webpack-bundle-tracker": "^0.4.2-beta",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
@@ -43,6 +43,7 @@
     "bootstrap-vue": "^2.0.0-rc.12",
     "vue-awesome": "^3.4.0",
     "vue-router": "^3.0.2",
-    "vuex": "^3.1.0"
+    "vuex": "^3.1.0",
+    "webpack-bundle": "^0.9.10"
   }
 }

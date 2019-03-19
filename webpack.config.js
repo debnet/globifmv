@@ -1,7 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 var BundleTracker = require('webpack-bundle-tracker');
-const { VueLoaderPlugin } = require('vue-loader');
+const {VueLoaderPlugin} = require('vue-loader');
 
 module.exports = {
     context: __dirname,
@@ -24,8 +24,8 @@ module.exports = {
                 test: /\.js$/,
                 loader: 'babel-loader',
                 include: [
-                  path.resolve('assets'),
-                  path.resolve('node_modules/vue-awesome')
+                    path.resolve('assets'),
+                    path.resolve('node_modules/vue-awesome')
                 ]
             },
             {
@@ -35,21 +35,21 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
-                  'style-loader',
-                  'css-loader'
+                    'style-loader',
+                    'css-loader'
                 ]
             },
             {
-              test: /\.(png|svg|jpg|gif)$/,
-              use: [
-                  {
-                      loader: 'file-loader',
-                      options: {
-                        name: 'img/[name].[ext]',
-                        publicPath: 'static'
-                      }
-                  }
-              ]
+                test: /\.(png|svg|jpg|gif)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: 'img/[name].[ext]',
+                            publicPath: 'static'
+                        }
+                    }
+                ]
             }
         ],
     },

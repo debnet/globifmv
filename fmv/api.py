@@ -6,10 +6,12 @@ from rest_framework import serializers
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from fmv.models import MODELS, Choice, Save, Scenario, Scene
 
+
+DEFAULT_CONFIG.update(permissions=(IsAuthenticatedOrReadOnly, ))
 
 # Surcharge des options de base
 CONFIGS.update({
