@@ -1,6 +1,8 @@
 <template>
     <div class="videoPlayer">
-        <b-button class="config" v-b-modal.config>
+        <b-button class="config"
+                  v-b-modal.config
+                  @click="openConfig">
             <icon name="cog" scale="2"/>
         </b-button>
         <video autoplay
@@ -44,7 +46,10 @@
         methods: {
             ...mapActions({
                 setQuality: 'globifmv/setQuality'
-            })
+            }),
+            openConfig () {
+                this.$refs.player.pause()
+            }
         },
         computed: {
             volume: {
@@ -64,6 +69,11 @@
             this.interval = setInterval(() => {
                 EventBus.$emit('video-timer', this.$refs.player.currentTime)
             }, 500)
+        },
+        mounted() {
+            this.$root.$on('bv::modal::hide', (bvEvent, modalId) => {
+                this.$refs.player.play()
+            })
         },
         watch: {
             video: function (value) {

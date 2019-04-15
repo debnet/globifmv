@@ -103,7 +103,8 @@
             verifDisplayChoice(timer) {
                 let scope = this;
                 this.choices.forEach(function (choice) {
-                    if (choice.timecode <= timer) {
+                    var timecode = choice.timecode ? choice.timecode : scope.scene.timecode
+                    if (timecode <= timer) {
                         scope.displayChoice(choice.id)
                     }
                 })
