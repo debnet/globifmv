@@ -2,6 +2,7 @@
 from common.api.base import CONFIGS, DEFAULT_CONFIG
 from common.api.utils import api_view_with_serializer as api_view, create_api, create_model_serializer
 from django.db.models import F
+from django.urls import path
 from rest_framework import serializers
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import ValidationError
@@ -133,3 +134,15 @@ def select_choice_from_save(request, save_uid, choice_id):
         Choice.objects.filter(id=choice_id).update(count=F('count') + 1)
     save.refresh_from_db()
     return save
+
+
+namespace = 'fmv-api'
+app_name = 'fmv'
+urlpatterns = [
+    path('scene/<int:scene_id>/choices/', get_scene_choices, name='get_scene_choices'),
+    path('start/<int:scenario_id>/', start_scenario, name='start_scenario'),
+    path('choose/<int:choice_id>/', select_choice, name='select_choice'),
+    path('<uuid:save_uid>/', get_save_by_uid, name='get_save_by_uid'),
+    path('<uuid:save_uid>/<int:choice_id>/', select_choice_from_save, name='select_choice_from_save'),
+] + router.urls
+urls = (urlpatterns, namespace, app_name)
