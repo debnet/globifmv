@@ -66,6 +66,7 @@ class Base(Configuration):
 
     # Database
     # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
+    DATABASES = values.DatabaseURLValue('sqlite://./db.sqlite3')
     DATABASE_ROUTERS = values.ListValue(('common.router.DatabaseOverrideRouter',))
 
     # URL router
@@ -184,45 +185,46 @@ class Base(Configuration):
     }
 
     # JSON Web Token Authentication
-    JWT_AUTH = {
-        'JWT_ENCODE_HANDLER': 'common.api.config.jwt_encode_handler',
-        'JWT_DECODE_HANDLER': 'common.api.config.jwt_decode_handler',
-        'JWT_PAYLOAD_HANDLER': 'common.api.config.jwt_payload_handler',
-        'JWT_RESPONSE_PAYLOAD_HANDLER': 'common.api.config.jwt_response_payload_handler',
-        'JWT_SECRET_KEY': SECRET_KEY,
-        'JWT_ALGORITHM': 'HS256',
-        'JWT_VERIFY': True,
-        'JWT_VERIFY_EXPIRATION': True,
-        'JWT_LEEWAY': 0,
-        'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3600),
-        'JWT_AUDIENCE': None,
-        'JWT_ISSUER': None,
-        'JWT_ALLOW_REFRESH': True,
-        'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-        'JWT_AUTH_HEADER_PREFIX': 'JWT',
+    SIMPLE_JWT = {
+        'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+        'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+        'ROTATE_REFRESH_TOKENS': False,
+        'BLACKLIST_AFTER_ROTATION': True,
+        'ALGORITHM': 'HS256',
+        'SIGNING_KEY': values.SecretValue(environ_name='SECRET_KEY'),
+        'VERIFYING_KEY': None,
+        'AUTH_HEADER_TYPES': ('Bearer', 'JWT',),
+        'USER_ID_FIELD': 'id',
+        'USER_ID_CLAIM': 'user_id',
+        'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+        'TOKEN_TYPE_CLAIM': 'token_type',
+        'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+        'SLIDING_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+        'SLIDING_TOKEN_REFRESH_LIFETIME': datetime.timedelta(days=1),
     }
 
     # Login URLs
-    LOGIN_URL = '/login/'
-    LOGIN_REDIRECT_URL = '/'
-    LOGOUT_URL = '/logout/'
+    LOGIN_URL = values.Value('login')
+    LOGOUT_URL = values.Value('logout')
+    LOGIN_REDIRECT_URL = values.Value('fallout:index')
+    LOGOUT_REDIRECT_URL = values.Value('fallout:index')
 
     # User substitution
     AUTH_USER_MODEL = 'fmv.User'
 
     # Messages
     MESSAGE_TAGS = {
-        messages.DEBUG: 'light',
-        messages.INFO: 'info',
-        messages.SUCCESS: 'success',
-        messages.WARNING: 'warning',
-        messages.ERROR: 'danger',
+        messages.DEBUG: values.Value('light', environ_name='CSS_DEBUG'),
+        messages.INFO: values.Value('info', environ_name='CSS_INFO'),
+        messages.SUCCESS: values.Value('success', environ_name='CSS_SUCCESS'),
+        messages.WARNING: values.Value('warning', environ_name='CSS_WARNING'),
+        messages.ERROR: values.Value('danger error', environ_name='CSS_ERROR'),
     }
     CSS_CLASSES = {
-        (1, 1): 'info',
-        (1, 0): 'success',
-        (0, 0): 'warning',
-        (0, 1): 'danger',
+        (1, 1): values.Value('info', environ_name='CSS_11'),
+        (1, 0): values.Value('success', environ_name='CSS_10'),
+        (0, 0): values.Value('warning', environ_name='CSS_00'),
+        (0, 1): values.Value('danger error', environ_name='CSS_01'),
     }
 
     # CSS and JS compression
@@ -242,9 +244,6 @@ class Base(Configuration):
     # Taille du payload maximum autorisée et permissions à l'upload
     DATA_UPLOAD_MAX_MEMORY_SIZE = values.IntegerValue(10485760)
     FILE_UPLOAD_PERMISSIONS = values.IntegerValue(0o644)
-
-    # Surveillance des accès aux services
-    IP_DETECTION = values.BooleanValue(False)
 
     # Stocke le token CSRF en session plutôt que dans un cookie
     CSRF_USE_SESSIONS = values.BooleanValue(False)
@@ -294,6 +293,15 @@ class Base(Configuration):
                 'level': 'INFO',
                 'propagate': False,
             },
+        }
+    }
+
+    # Webpack pour le frontend
+    WEBPACK_LOADER = {
+        'DEFAULT': {
+            'CACHE': DEBUG,
+            'BUNDLE_DIR_NAME': '',
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
         }
     }
 
@@ -347,7 +355,7 @@ class Prod(Base):
     ]
 
     # Celery configuration
-    CELERY_ENABLE = True
+    CELERY_ENABLE = values.BooleanValue(True)
     CELERY_BROKER_URL = BROKER_URL = values.Value('redis://localhost:6379/1', environ_name='CELERY_BROKER_URL')
     CELERY_BROKER_TRANSPORT_OPTIONS = BROKER_TRANSPORT_OPTIONS = {
         'visibility_timeout': 3600,
@@ -370,7 +378,6 @@ class Test(Base):
     Configuration de développement
     """
 
-    SECRET_KEY = '1'
     DEBUG = True
     INTERNAL_IPS = ('localhost', '127.0.0.1', 'testserver')
     ALLOWED_HOSTS = INTERNAL_IPS
@@ -393,9 +400,6 @@ class Test(Base):
     # Disable password security
     AUTH_PASSWORD_VALIDATORS = []
 
-    # Database
-    DATABASES = values.DatabaseURLValue('sqlite://./db.sqlite3')
-
     # Cache
     CACHES = {
         'default': {
@@ -403,13 +407,4 @@ class Test(Base):
             'LOCATION': 'unique-snowflake',
             'TIMEOUT': 3600,
         },
-    }
-
-    # Webpack pour le frontend
-    WEBPACK_LOADER = {
-        'DEFAULT': {
-            'CACHE': DEBUG,
-            'BUNDLE_DIR_NAME': '',
-            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-        }
     }
