@@ -27,7 +27,7 @@ class NamedModelMixin(models.Model):
         blank=True, null=True, verbose_name=_("image"))
 
     def __str__(self):
-        return self.name or str(self.id or __("(non enregistré)"))
+        return self.name or str(self.id or _("(non enregistré)"))
 
     class Meta:
         abstract = True
