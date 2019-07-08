@@ -17,6 +17,11 @@
                     <b-button slot="footer" @click="onClickOpenScenario(scenario.id, scenario.intro_scene.id)"
                               variant="outline-dark">Commencer le scénario
                     </b-button>
+                    <b-button slot="footer"
+                              v-if="haveSave(scenario.id)"
+                              @click="continueGame(scenario.id)"
+                              variant="outline-dark">Continuer le scénario
+                    </b-button>
                 </b-card>
             </b-card-group>
         </div>
@@ -26,6 +31,7 @@
                  ok-only ok-title="Annuler"
                  ok-variant="outline-dark"
                  size="sm">
+            <div v-if="haveSave(selectedScenar)" class="warning">Une sauvegarde existe déjà, si vous pousuivez, votre progression sera perdu.</div>
             <b-button variant="outline-dark" @click="goTo('SD', selectedScenar, selectedScene)">SD</b-button>
             <b-button variant="outline-dark" @click="goTo('HD', selectedScenar, selectedScene)">HD</b-button>
         </b-modal>
@@ -50,18 +56,27 @@
                 setQuality: 'globifmv/setQuality',
                 setScenario: 'globifmv/setScenario',
                 setScene: 'globifmv/setScene',
-                startScenario: 'globifmv/startScenario'
+                startScenario: 'globifmv/startScenario',
+                loadSavedGame: 'globifmv/loadSavedGame'
             }),
             onClickOpenScenario(scenarioId, sceneId) {
-                this.modalShow = true;
-                this.selectedScenar = scenarioId;
+                this.selectedScenar = scenarioId
                 this.selectedScene = sceneId
+                this.modalShow = true
             },
             goTo: async function (quality, scenario, scene) {
                 this.setQuality(quality);
                 this.setScenario(scenario);
                 this.setScene(scene);
                 var data = await this.startScenario();
+                this.$router.push({name: 'scenar'})
+            },
+            haveSave(scenarioId) {
+                return localStorage.getItem(scenarioId) !== null
+            },
+            continueGame(scenarioId) {
+                var save = localStorage.getItem(scenarioId)
+                this.loadSavedGame(save)
                 this.$router.push({name: 'scenar'})
             }
         },
@@ -105,5 +120,14 @@
 
     body {
         background-color: black;
+    }
+
+    .btn{
+        margin-right: 10px;
+    }
+    
+    .warning{
+        color: red;
+        font-weight: bold;
     }
 </style>
