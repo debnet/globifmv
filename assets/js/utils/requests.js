@@ -17,3 +17,8 @@ export function startScenario(id) {
 export function setChoice(choiceId, saveUid) {
     return axios.get(path + saveUid + '/' + choiceId)
 }
+
+// URL load game from save
+export function loadSavedGame(saveUid) {
+    return axios.get(path + 'save/?uuid=' + saveUid)
+}

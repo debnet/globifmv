@@ -9,6 +9,7 @@
                 <div class="d-flex align-items-end justify-content-center">
                     <b-button-group vertical class="mx-auto">
                         <b-button variant="light"
+                                  class="choice"
                                   v-for="choice in choicesToDisplay"
                                   :key="choice.id"
                                   @click="gotTo(choice.id)">
@@ -141,6 +142,21 @@
         bottom: 0px;
         height: 15vh;
         width: 100%;
+    }
+
+    .choice {
+        animation-duration: 1s;
+        animation-name: fadeIn;
+    }
+
+    @keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
     }
 
     .home {

@@ -1,6 +1,6 @@
 
 function onYouTubeIframeAPIReady() {
-    var player = new YT.Player('player');
+    let player = new YT.Player('player');
     player.addEventListener("onStateChange", function(event) {
         if (event.data === 0) {
             player.pauseVideo();
