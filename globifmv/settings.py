@@ -65,7 +65,6 @@ class Base(Configuration):
     ]
 
     # Database
-    # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
     DATABASES = values.DatabaseURLValue('sqlite://./db.sqlite3')
     DATABASE_ROUTERS = values.ListValue(('common.router.DatabaseOverrideRouter',))
 
@@ -97,7 +96,6 @@ class Base(Configuration):
     )
 
     # Password validation
-    # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
     AUTH_PASSWORD_VALIDATORS = [
         {
             'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -114,7 +112,6 @@ class Base(Configuration):
     ]
 
     # Internationalization
-    # https://docs.djangoproject.com/en/2.0/topics/i18n/
     LANGUAGE_CODE = values.Value('fr')
     TIME_ZONE = values.Value('Europe/Paris')
     USE_I18N = values.BooleanValue(True)
@@ -132,7 +129,6 @@ class Base(Configuration):
     )
 
     # Static files (CSS, JavaScript, Images)
-    # https://docs.djangoproject.com/en/2.0/howto/static-files/
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
